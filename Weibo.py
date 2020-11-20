@@ -11,6 +11,7 @@ headers = {
 
 
 async def get_html(url):
+    print('正在爬取。。。', url)
     # html = requests.get(url, headers=headers)
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url) as resp:
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         'https://s.weibo.com/top/summary?cate=realtimehot',
         'https://s.weibo.com/top/summary?cate=socialevent'
     ]
-    tasks=[]
+    tasks = []
     for url in urls:
         tasks.append(get_html(url))
     loop = asyncio.get_event_loop()
