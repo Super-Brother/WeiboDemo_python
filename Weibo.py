@@ -1,20 +1,24 @@
-import requests
-from bs4 import BeautifulSoup
-from urllib import parse
+import asyncio
 import time
+from urllib import parse
+
+import aiohttp
+from bs4 import BeautifulSoup
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 Edg/86.0.622.69'
 }
 
 
-def get_html(url):
-    html = requests.get(url, headers=headers)
-    if html.status_code == 200:
-        parse_html(html.text)
-    else:
-        print('error', html.text)
-    return
+async def get_html(url):
+    # html = requests.get(url, headers=headers)
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                parse_html(await resp.text())
+            else:
+                print('error', resp.status)
+            return
 
 
 def parse_html(html):
@@ -34,7 +38,12 @@ if __name__ == '__main__':
         'https://s.weibo.com/top/summary?cate=realtimehot',
         'https://s.weibo.com/top/summary?cate=socialevent'
     ]
+    tasks=[]
     for url in urls:
-        get_html(url)
+        tasks.append(get_html(url))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.wait(tasks))
 
     print(time.time() - start)
+
+    loop.close()
